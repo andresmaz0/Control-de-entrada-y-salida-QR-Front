@@ -29,38 +29,28 @@
         #reader img { display: none !important; }
         #reader__dashboard { display: none !important; }
         #reader__status_span { display: none !important; }
+        #reader video { 
+            border-radius: 1.5rem;
+            object-fit: cover !important;
+        }
 
         /* Animación de la línea de escaneo */
         .scanner-line {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
+            top: 20%;
+            left: 10%;
+            width: 80%;
+            height: 3px;
             background: #22c55e;
-            box-shadow: 0 0 15px #22c55e;
-            animation: scan 2s linear infinite;
+            box-shadow: 0 0 20px #22c55e;
+            animation: scan 2.5s ease-in-out infinite;
             z-index: 10;
         }
 
         @keyframes scan {
-            0% { top: 10%; }
-            100% { top: 90%; }
+            0%, 100% { top: 20%; opacity: 0.8; }
+            50% { top: 80%; opacity: 1; }
         }
-
-        /* Esquinas del escáner */
-        .scan-corner {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border-color: #22c55e;
-            border-width: 4px;
-            z-index: 20;
-        }
-        .top-left { top: 20px; left: 20px; border-top-style: solid; border-left-style: solid; }
-        .top-right { top: 20px; right: 20px; border-top-style: solid; border-right-style: solid; }
-        .bottom-left { bottom: 20px; left: 20px; border-bottom-style: solid; border-left-style: solid; }
-        .bottom-right { bottom: 20px; right: 20px; border-bottom-style: solid; border-right-style: solid; }
 
         .modal-animate-in {
             animation: fadeIn 0.3s ease-out forwards;
@@ -81,13 +71,18 @@
             transition: all 0.2s;
             z-index: 30;
         }
+
+        .help-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden relative">
         <!-- Botón de Ayuda -->
-        <button id="open-help" class="help-btn text-white">
+        <button id="open-help" class="help-btn text-white" title="¿Cómo usar?">
             <i data-lucide="help-circle" class="w-6 h-6"></i>
         </button>
 
@@ -97,60 +92,43 @@
                 <i data-lucide="shield-check" class="w-8 h-8"></i>
             </div>
             <h1 class="text-2xl font-bold leading-tight">Control de entrada y salida</h1>
-            <p class="text-green-100 text-sm mt-2">Gestión de personal mediante QR</p>
-        </div>
-
-        <!-- Selector de Modo -->
-        <div class="flex border-b">
-            <button id="tab-camera" class="flex-1 py-4 text-sm font-bold text-green-600 border-b-2 border-green-600 bg-green-50">
-                <i data-lucide="camera" class="w-4 h-4 inline mr-2"></i>Cámara
-            </button>
-            <button id="tab-file" class="flex-1 py-4 text-sm font-bold text-gray-500 hover:text-green-600 transition-colors">
-                <i data-lucide="image" class="w-4 h-4 inline mr-2"></i>Subir Imagen
-            </button>
+            <p class="text-green-100 text-sm mt-2">Escaneo en vivo de personal</p>
         </div>
 
         <!-- Scanner Section -->
         <div class="p-6">
             <!-- Contenedor Visual del Escáner -->
-            <div id="scanner-wrapper" class="relative w-full aspect-square bg-black rounded-2xl overflow-hidden mb-6 shadow-inner">
+            <div id="scanner-wrapper" class="relative w-full aspect-square bg-black rounded-2xl overflow-hidden mb-4 shadow-inner">
                 <div id="reader"></div>
                 
-                <!-- Overlay Visual (Mira de escaneo) -->
-                <div id="scan-overlay" class="absolute inset-0 pointer-events-none">
+                <!-- Overlay Visual (Mira de escaneo limpia) -->
+                <div id="scan-overlay" class="absolute inset-0 pointer-events-none hidden">
                     <div class="scanner-line"></div>
-                    <div class="scan-corner top-left"></div>
-                    <div class="scan-corner top-right"></div>
-                    <div class="scan-corner bottom-left"></div>
-                    <div class="scan-corner bottom-right"></div>
+                    <!-- Sombreado perimetral para centrar la vista sin cuadros verdes -->
+                    <div class="absolute inset-0 bg-black/50" style="clip-path: polygon(0% 0%, 0% 100%, 10% 100%, 10% 15%, 90% 15%, 90% 85%, 10% 85%, 10% 100%, 100% 100%, 100% 0%);"></div>
                 </div>
 
                 <!-- Estado inicial / Botón de inicio -->
                 <div id="camera-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gray-900 z-40">
-                    <div class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 text-gray-400">
-                        <i data-lucide="camera-off" class="w-8 h-8"></i>
+                    <div class="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mb-6 text-green-500 shadow-lg shadow-green-900/20">
+                        <i data-lucide="camera" class="w-10 h-10"></i>
                     </div>
-                    <p class="text-gray-400 text-sm mb-4">La cámara está desactivada</p>
-                    <button id="start-camera-btn" class="px-6 py-2 bg-green-600 text-white rounded-full font-bold text-sm hover:bg-green-700 transition-colors">
+                    <h2 class="text-white font-semibold mb-2 text-lg">Cámara Lista</h2>
+                    <p class="text-gray-400 text-sm mb-6">Presione el botón para iniciar el reconocimiento de códigos QR</p>
+                    <button id="start-camera-btn" class="px-8 py-3 bg-green-600 text-white rounded-full font-bold text-base hover:bg-green-700 transition-all transform hover:scale-105 shadow-xl shadow-green-600/30">
                         Activar Cámara
                     </button>
                 </div>
             </div>
 
-            <!-- Botón para subir archivo (oculto por defecto) -->
-            <div id="file-input-container" class="hidden mb-6 text-center">
-                <label for="qr-input-file" class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-green-300 rounded-2xl bg-green-50 hover:bg-green-100 cursor-pointer transition-colors">
-                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                        <i data-lucide="upload-cloud" class="w-10 h-10 text-green-600 mb-3"></i>
-                        <p class="mb-2 text-sm text-green-700 font-bold">Haz clic para subir foto</p>
-                        <p class="text-xs text-green-600">Formatos: PNG, JPG o Captura de pantalla</p>
-                    </div>
-                    <input id="qr-input-file" type="file" accept="image/*" class="hidden" />
-                </label>
-            </div>
+            <!-- Botón Detener -->
+            <button id="stop-camera-btn" class="hidden w-full mb-6 py-3 border-2 border-gray-200 text-gray-500 hover:text-red-500 hover:border-red-200 hover:bg-red-50 rounded-xl font-semibold transition-all flex items-center justify-center gap-2">
+                <i data-lucide="square" class="w-4 h-4 fill-current"></i>
+                Detener Escaneo
+            </button>
             
             <!-- Resultado de Detección -->
-            <div id="result-container" class="hidden space-y-4">
+            <div id="result-container" class="hidden space-y-4 mb-4">
                 <div class="p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
                     <i data-lucide="check-circle-2" class="text-green-600 w-6 h-6"></i>
                     <div>
@@ -166,12 +144,12 @@
             </div>
 
             <div id="status-message" class="text-center text-gray-400 text-sm italic">
-                <p>Alinee el código QR dentro del recuadro verde</p>
+                <p>Mantenga el código dentro de la zona iluminada</p>
             </div>
         </div>
     </div>
 
-    <!-- Modales (Ayuda y Éxito) idénticos en funcionalidad -->
+    <!-- Modal de Ayuda -->
     <div id="help-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center modal-animate-in shadow-2xl">
             <div class="relative w-24 h-24 mx-auto mb-6 flex items-center justify-center">
@@ -182,16 +160,32 @@
                     <i data-lucide="hand" class="w-10 h-10 text-orange-400 absolute -bottom-2 -right-2 rotate-12"></i>
                 </div>
             </div>
-            <h2 class="text-xl font-bold text-gray-800 mb-4">¿Cómo usar la app?</h2>
-            <ul class="text-left text-gray-600 space-y-3 mb-8 text-sm">
-                <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-green-600 mt-0.5"></i> Escanee en vivo o suba una foto de su código.</li>
-                <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-green-600 mt-0.5"></i> Espere a que el sistema valide el ID.</li>
-                <li class="flex gap-2"><i data-lucide="check" class="w-4 h-4 text-green-600 mt-0.5"></i> Presione enviar para registrar su horario.</li>
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Guía de Uso</h2>
+            <ul class="text-left text-gray-600 space-y-4 mb-8 text-sm">
+                <li class="flex items-start gap-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-green-600 flex-shrink-0"></i>
+                    <span>Active la cámara para ver la zona de escaneo.</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-green-600 flex-shrink-0"></i>
+                    <span>El área de lectura es el recuadro central despejado.</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-green-600 flex-shrink-0"></i>
+                    <span>Cuando el código QR sea detectado, aparecerá el botón "Enviar".</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-green-600 flex-shrink-0"></i>
+                    <span>Si tiene problemas, detenga y reinicie el escaneo.</span>
+                </li>
             </ul>
-            <button id="close-help" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl">Entendido</button>
+            <button id="close-help" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-xl transition-all">
+                Entendido
+            </button>
         </div>
     </div>
 
+    <!-- Modal de Éxito -->
     <div id="modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center modal-animate-in shadow-2xl border-t-8 border-green-600">
             <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -206,31 +200,23 @@
     <script>
         lucide.createIcons();
 
-        // Elementos UI
-        const readerEl = document.getElementById('reader');
         const startCameraBtn = document.getElementById('start-camera-btn');
+        const stopCameraBtn = document.getElementById('stop-camera-btn');
         const cameraPlaceholder = document.getElementById('camera-placeholder');
-        const scannerWrapper = document.getElementById('scanner-wrapper');
-        const fileContainer = document.getElementById('file-input-container');
+        const scanOverlay = document.getElementById('scan-overlay');
         const resultContainer = document.getElementById('result-container');
         const qrDataText = document.getElementById('qr-data-text');
         const sendBtn = document.getElementById('send-btn');
         const modalOverlay = document.getElementById('modal-overlay');
         const modalMessage = document.getElementById('modal-message');
-        const fileInput = document.getElementById('qr-input-file');
 
-        // Tabs
-        const tabCamera = document.getElementById('tab-camera');
-        const tabFile = document.getElementById('tab-file');
-
-        // Instancia del escáner
         const html5QrCode = new Html5Qrcode("reader");
         let isScanning = false;
 
-        // Función para procesar éxito
         const handleSuccess = (decodedText) => {
             qrDataText.textContent = decodedText;
             resultContainer.classList.remove('hidden');
+            stopCameraBtn.classList.add('hidden');
             document.getElementById('status-message').classList.add('hidden');
             
             if (isScanning) {
@@ -238,60 +224,48 @@
             }
         };
 
-        // Iniciar Cámara
         async function startCamera() {
             try {
                 cameraPlaceholder.classList.add('hidden');
-                const config = { fps: 15, qrbox: { width: 250, height: 250 } };
+                scanOverlay.classList.remove('hidden');
+                stopCameraBtn.classList.remove('hidden');
+                resultContainer.classList.add('hidden');
+
+                const config = { 
+                    fps: 20, 
+                    qrbox: { width: 300, height: 300 },
+                    aspectRatio: 1.0
+                };
+                
                 await html5QrCode.start({ facingMode: "environment" }, config, handleSuccess);
                 isScanning = true;
             } catch (err) {
                 console.error("Error cámara:", err);
-                cameraPlaceholder.classList.remove('hidden');
-                // Si falla, mostramos un mensaje amigable
-                cameraPlaceholder.innerHTML = `<p class="text-red-400 p-4">No se pudo acceder a la cámara. Por favor verifica los permisos.</p>`;
+                resetUI();
+                cameraPlaceholder.innerHTML = `<div class="p-4"><p class="text-red-400 mb-4">No se pudo acceder a la cámara.</p><button onclick="location.reload()" class="text-sm text-white underline">Reintentar</button></div>`;
             }
         }
 
         async function stopCamera() {
             if (isScanning) {
-                await html5QrCode.stop();
+                try {
+                    await html5QrCode.stop();
+                } catch (e) { console.warn("Stop error:", e); }
                 isScanning = false;
-                cameraPlaceholder.classList.remove('hidden');
+                resetUI();
             }
         }
 
-        // Eventos de Tabs
-        tabCamera.addEventListener('click', () => {
-            tabCamera.className = "flex-1 py-4 text-sm font-bold text-green-600 border-b-2 border-green-600 bg-green-50";
-            tabFile.className = "flex-1 py-4 text-sm font-bold text-gray-500 hover:text-green-600 transition-colors";
-            scannerWrapper.classList.remove('hidden');
-            fileContainer.classList.add('hidden');
-        });
-
-        tabFile.addEventListener('click', async () => {
-            await stopCamera();
-            tabFile.className = "flex-1 py-4 text-sm font-bold text-green-600 border-b-2 border-green-600 bg-green-50";
-            tabCamera.className = "flex-1 py-4 text-sm font-bold text-gray-500 hover:text-green-600 transition-colors";
-            scannerWrapper.classList.add('hidden');
-            fileContainer.classList.remove('hidden');
-            resultContainer.classList.add('hidden');
-        });
+        function resetUI() {
+            cameraPlaceholder.classList.remove('hidden');
+            scanOverlay.classList.add('hidden');
+            stopCameraBtn.classList.add('hidden');
+            document.getElementById('status-message').classList.remove('hidden');
+        }
 
         startCameraBtn.addEventListener('click', startCamera);
+        stopCameraBtn.addEventListener('click', stopCamera);
 
-        // Procesar archivo subido
-        fileInput.addEventListener('change', e => {
-            if (e.target.files.length === 0) return;
-            const imageFile = e.target.files[0];
-            html5QrCode.scanFile(imageFile, true)
-                .then(handleSuccess)
-                .catch(err => {
-                    alert("No se encontró un código QR válido en la imagen.");
-                });
-        });
-
-        // Enviar Registro
         sendBtn.addEventListener('click', () => {
             const now = new Date();
             const formattedDate = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -302,7 +276,6 @@
             modalOverlay.classList.add('flex');
         });
 
-        // Modales y Ayuda
         document.getElementById('open-help').onclick = () => {
             document.getElementById('help-modal').classList.remove('hidden');
             document.getElementById('help-modal').classList.add('flex');
@@ -313,10 +286,7 @@
         document.getElementById('close-modal').onclick = () => {
             modalOverlay.classList.add('hidden');
             resultContainer.classList.add('hidden');
-            document.getElementById('status-message').classList.remove('hidden');
-            if (!fileContainer.classList.contains('hidden')) {
-                fileInput.value = "";
-            }
+            resetUI();
         };
     </script>
 </body>
